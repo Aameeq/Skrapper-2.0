@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Skraper Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #00d4ff;
+            --accent: #ff6b35;
+            --neutral: #f7fafc;
+            --text: #2d3748;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .json-tree {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .json-key {
+            color: #ff6b35;
+            font-weight: 500;
+        }
+        
+        .json-string {
+            color: #10b981;
+        }
+        
+        .json-number {
+            color: #00d4ff;
+        }
+        
+        .json-boolean {
+            color: #f59e0b;
+        }
+        
+        .json-null {
+            color: #6b7280;
+        }
+        
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .collapsible:hover {
+            opacity: 0.8;
+        }
+        
+        .collapsed {
+            display: none;
+        }
+        
+        .expand-icon {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #ff8c42);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+        }
+        
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <img src="resources/app-icon.png" alt="Skraper" class="w-8 h-8">
+                    <span class="text-xl font-bold gradient-text">Skraper Web</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="text-white hover:text-cyan-300 transition-colors">Home</a>
+                    <a href="results.html" class="text-cyan-400 hover:text-cyan-300 transition-colors">Results</a>
+                    <a href="docs.html" class="text-white hover:text-cyan-300 transition-colors">Docs</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Results Header -->
+    <section class="pt-24 pb-8 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-4xl font-bold gradient-text mb-2">Scraping Results</h1>
+                    <p class="text-gray-300">Analyze and export your extracted social media data</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="copyJsonBtn" class="btn-primary px-6 py-3 rounded-lg font-medium">
+                        📋 Copy JSON
+                    </button>
+                    <button id="downloadBtn" class="bg-cyan-600 hover:bg-cyan-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                        📥 Download
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Breadcrumb -->
+            <div class="flex items-center space-x-2 text-sm text-gray-400 mb-6">
+                <span>Home</span>
+                <span>→</span>
+                <span>Results</span>
+                <span id="platformBreadcrumb" class="hidden">
+                    <span>→</span>
+                    <span id="currentPlatform"></span>
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and Filter -->
+    <section class="pb-8 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 mb-8">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Search in JSON data..."
+                            class="w-full px-4 py-3 rounded-lg search-input text-white placeholder-gray-400 focus:outline-none"
+                        >
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <select id="filterSelect" class="bg-gray-700 text-white px-4 py-3 rounded-lg">
+                            <option value="all">All Data</option>
+                            <option value="posts">Posts Only</option>
+                            <option value="metadata">Metadata Only</option>
+                            <option value="stats">Statistics Only</option>
+                        </select>
+                        <button id="expandAllBtn" class="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg transition-colors">
+                            Expand All
+                        </button>
+                        <button id="collapseAllBtn" class="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg transition-colors">
+                            Collapse All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Cards -->
+    <section class="pb-8 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">Data Overview</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div class="metric-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-3xl font-bold text-cyan-400 mb-2" id="totalPosts">0</div>
+                    <div class="text-gray-300">Total Posts</div>
+                </div>
+                <div class="metric-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-3xl font-bold text-orange-400 mb-2" id="totalMedia">0</div>
+                    <div class="text-gray-300">Media Items</div>
+                </div>
+                <div class="metric-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-3xl font-bold text-green-400 mb-2" id="totalLikes">0</div>
+                    <div class="text-gray-300">Total Likes</div>
+                </div>
+                <div class="metric-card rounded-2xl p-6 text-center hover-lift">
+                    <div class="text-3xl font-bold text-purple-400 mb-2" id="totalComments">0</div>
+                    <div class="text-gray-300">Total Comments</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Visualization -->
+    <section class="pb-8 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Engagement Chart -->
+                <div class="glass-card rounded-2xl p-6 hover-lift">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">Engagement Metrics</h3>
+                    <div id="engagementChart" style="height: 300px;"></div>
+                </div>
+                
+                <!-- Post Timeline -->
+                <div class="glass-card rounded-2xl p-6 hover-lift">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">Post Timeline</h3>
+                    <div id="timelineChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JSON Viewer -->
+    <section class="pb-16 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 hover-lift">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold gradient-text">JSON Data Structure</h3>
+                    <div class="flex items-center space-x-2 text-sm text-gray-400">
+                        <span id="dataSize">0 KB</span>
+                        <span>•</span>
+                        <span id="itemCount">0 items</span>
+                    </div>
+                </div>
+                <div id="jsonViewer" class="json-tree code-font text-sm">
+                    <!-- JSON data will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-gray-700">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <img src="resources/app-icon.png" alt="Skraper" class="w-6 h-6">
+                <span class="font-bold gradient-text">Skraper Web</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                © 2024 Skraper Web. Built with the Skraper library for social media data extraction.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Results page functionality
+        class ResultsViewer {
+            constructor() {
+                this.resultsData = null;
+                this.filteredData = null;
+                this.init();
+            }
+
+            init() {
+                this.loadResults();
+                this.setupEventListeners();
+                this.renderResults();
+                this.initializeCharts();
+            }
+
+            loadResults() {
+                // Try to load from localStorage first
+                const stored = localStorage.getItem('scrapingResults');
+                if (stored) {
+                    this.resultsData = JSON.parse(stored);
+                } else {
+                    // Generate mock data for demonstration
+                    this.resultsData = this.generateMockResults();
+                }
+                this.filteredData = this.resultsData;
+            }
+
+            generateMockResults() {
+                return {
+                    metadata: {
+                        url: 'https://instagram.com/sample_user',
+                        platform: 'instagram',
+                        scraped_at: new Date().toISOString(),
+                        content_type: 'posts',
+                        output_format: 'json',
+                        limit: 50
+                    },
+                    data: this.generateMockPosts(20),
+                    statistics: {
+                        total_posts: 20,
+                        media_items: 35,
+                        engagement_metrics: {
+                            total_likes: 15420,
+                            total_comments: 892,
+                            total_shares: 234
+                        }
+                    }
+                };
+            }
+
+            generateMockPosts(count) {
+                const posts = [];
+                const sampleContent = [
+                    'Amazing sunset today! 🌅 #photography #nature',
+                    'New project launch! Excited to share this with everyone 🚀',
+                    'Coffee and code - perfect Monday morning ☕ #developer',
+                    'Weekend vibes! Time to relax and recharge 🌴',
+                    'Learning something new every day 📚 #growth',
+                    'Team meeting went great! Love working with amazing people 💪',
+                    'Just finished a great book - highly recommend! 📖',
+                    'Morning workout complete! Feeling energized 💪',
+                    'Beautiful day for a walk in the park 🌳',
+                    'Cooking experiment success! 🍳 #foodie'
+                ];
+
+                for (let i = 0; i < count; i++) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - Math.floor(Math.random() * 30));
+                    
+                    posts.push({
+                        id: `post_${i + 1}`,
+                        username: 'sample_user',
+                        content: sampleContent[i % sampleContent.length],
+                        timestamp: date.toISOString(),
+                        likes: Math.floor(Math.random() * 1000) + 50,
+                        comments: Math.floor(Math.random() * 50) + 5,
+                        shares: Math.floor(Math.random() * 20),
+                        media_url: `https://example.com/media_${i + 1}.jpg`,
+                        caption: `Post caption ${i + 1}`,
+                        hashtags: ['#sample', '#test', '#data'],
+                        mentions: []
+                    });
+                }
+                return posts;
+            }
+
+            setupEventListeners() {
+                // Search functionality
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+
+                // Filter functionality
+                document.getElementById('filterSelect').addEventListener('change', (e) => {
+                    this.handleFilter(e.target.value);
+                });
+
+                // Expand/Collapse all
+                document.getElementById('expandAllBtn').addEventListener('click', () => {
+                    this.expandAll();
+                });
+
+                document.getElementById('collapseAllBtn').addEventListener('click', () => {
+                    this.collapseAll();
+                });
+
+                // Copy JSON
+                document.getElementById('copyJsonBtn').addEventListener('click', () => {
+                    this.copyJson();
+                });
+
+                // Download
+                document.getElementById('downloadBtn').addEventListener('click', () => {
+                    this.downloadJson();
+                });
+            }
+
+            renderResults() {
+                if (!this.resultsData) return;
+
+                // Update breadcrumb
+                const platformBreadcrumb = document.getElementById('platformBreadcrumb');
+                const currentPlatform = document.getElementById('currentPlatform');
+                if (this.resultsData.metadata.platform) {
+                    platformBreadcrumb.classList.remove('hidden');
+                    currentPlatform.textContent = this.resultsData.metadata.platform.charAt(0).toUpperCase() + 
+                                                 this.resultsData.metadata.platform.slice(1);
+                }
+
+                // Update statistics
+                this.updateStatistics();
+
+                // Render JSON viewer
+                this.renderJsonViewer();
+
+                // Animate elements
+                this.animateElements();
+            }
+
+            updateStatistics() {
+                const stats = this.resultsData.statistics;
+                const engagement = stats.engagement_metrics;
+
+                document.getElementById('totalPosts').textContent = stats.total_posts || 0;
+                document.getElementById('totalMedia').textContent = stats.media_items || 0;
+                document.getElementById('totalLikes').textContent = this.formatNumber(engagement.total_likes || 0);
+                document.getElementById('totalComments').textContent = this.formatNumber(engagement.total_comments || 0);
+
+                // Update data size and item count
+                const jsonString = JSON.stringify(this.resultsData, null, 2);
+                const sizeInKB = Math.round(new Blob([jsonString]).size / 1024);
+                document.getElementById('dataSize').textContent = `${sizeInKB} KB`;
+                document.getElementById('itemCount').textContent = `${this.resultsData.data?.length || 0} items`;
+            }
+
+            renderJsonViewer() {
+                const container = document.getElementById('jsonViewer');
+                container.innerHTML = this.renderJsonValue(this.filteredData, 'root', true);
+            }
+
+            renderJsonValue(value, key, isRoot = false) {
+                const keyClass = 'json-key';
+                const stringClass = 'json-string';
+                const numberClass = 'json-number';
+                const booleanClass = 'json-boolean';
+                const nullClass = 'json-null';
+
+                if (value === null) {
+                    return `<span class="${nullClass}">null</span>`;
+                }
+
+                if (typeof value === 'boolean') {
+                    return `<span class="${booleanClass}">${value}</span>`;
+                }
+
+                if (typeof value === 'number') {
+                    return `<span class="${numberClass}">${value}</span>`;
+                }
+
+                if (typeof value === 'string') {
+                    return `<span class="${stringClass}">"${value}"</span>`;
+                }
+
+                if (Array.isArray(value)) {
+                    const id = `array_${Math.random().toString(36).substr(2, 9)}`;
+                    const preview = value.length > 0 ? `${value.length} items` : 'empty';
+                    
+                    return `
+                        <div class="collapsible" onclick="toggleCollapse('${id}')">
+                            <span class="expand-icon">▶</span>
+                            <span class="${keyClass}">${key}</span>: [${preview}]
+                        </div>
+                        <div id="${id}" class="collapsed" style="margin-left: 20px;">
+                            ${value.map((item, index) => `${this.renderJsonValue(item, index)}`).join(',<br>')}
+                        </div>
+                    `;
+                }
+
+                if (typeof value === 'object') {
+                    const id = `object_${Math.random().toString(36).substr(2, 9)}`;
+                    const keys = Object.keys(value);
+                    const preview = keys.length > 0 ? `${keys.length} keys` : 'empty';
+                    
+                    return `
+                        <div class="collapsible" onclick="toggleCollapse('${id}')">
+                            <span class="expand-icon">▶</span>
+                            <span class="${keyClass}">${key}</span>: {${preview}}
+                        </div>
+                        <div id="${id}" class="collapsed" style="margin-left: 20px;">
+                            ${keys.map(k => `${this.renderJsonValue(value[k], k)}`).join(',<br>')}
+                        </div>
+                    `;
+                }
+
+                return String(value);
+            }
+
+            initializeCharts() {
+                this.createEngagementChart();
+                this.createTimelineChart();
+            }
+
+            createEngagementChart() {
+                const chart = echarts.init(document.getElementById('engagementChart'));
+                
+                if (!this.resultsData.data || this.resultsData.data.length === 0) {
+                    chart.setOption({
+                        title: {
+                            text: 'No data available',
+                            textStyle: { color: '#9ca3af' }
+                        }
+                    });
+                    return;
+                }
+
+                const posts = this.resultsData.data.slice(0, 10); // Show last 10 posts
+                const likes = posts.map(post => post.likes || 0);
+                const comments = posts.map(post => post.comments || 0);
+                const shares = posts.map(post => post.shares || 0);
+
+                const option = {
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        borderColor: '#00d4ff',
+                        textStyle: { color: '#fff' }
+                    },
+                    legend: {
+                        data: ['Likes', 'Comments', 'Shares'],
+                        textStyle: { color: '#9ca3af' }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: posts.map((_, index) => `Post ${index + 1}`),
+                        axisLine: { lineStyle: { color: '#374151' } },
+                        axisLabel: { color: '#9ca3af' }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLine: { lineStyle: { color: '#374151' } },
+                        axisLabel: { color: '#9ca3af' },
+                        splitLine: { lineStyle: { color: '#374151' } }
+                    },
+                    series: [
+                        {
+                            name: 'Likes',
+                            type: 'bar',
+                            data: likes,
+                            itemStyle: { color: '#00d4ff' }
+                        },
+                        {
+                            name: 'Comments',
+                            type: 'bar',
+                            data: comments,
+                            itemStyle: { color: '#ff6b35' }
+                        },
+                        {
+                            name: 'Shares',
+                            type: 'bar',
+                            data: shares,
+                            itemStyle: { color: '#10b981' }
+                        }
+                    ]
+                };
+
+                chart.setOption(option);
+            }
+
+            createTimelineChart() {
+                const chart = echarts.init(document.getElementById('timelineChart'));
+                
+                if (!this.resultsData.data || this.resultsData.data.length === 0) {
+                    chart.setOption({
+                        title: {
+                            text: 'No data available',
+                            textStyle: { color: '#9ca3af' }
+                        }
+                    });
+                    return;
+                }
+
+                // Group posts by date
+                const dateMap = new Map();
+                this.resultsData.data.forEach(post => {
+                    const date = new Date(post.timestamp).toISOString().split('T')[0];
+                    dateMap.set(date, (dateMap.get(date) || 0) + 1);
+                });
+
+                const dates = Array.from(dateMap.keys()).sort();
+                const counts = dates.map(date => dateMap.get(date));
+
+                const option = {
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        borderColor: '#00d4ff',
+                        textStyle: { color: '#fff' }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: dates,
+                        axisLine: { lineStyle: { color: '#374151' } },
+                        axisLabel: { color: '#9ca3af', rotate: 45 }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLine: { lineStyle: { color: '#374151' } },
+                        axisLabel: { color: '#9ca3af' },
+                        splitLine: { lineStyle: { color: '#374151' } }
+                    },
+                    series: [{
+                        name: 'Posts',
+                        type: 'line',
+                        data: counts,
+                        smooth: true,
+                        itemStyle: { color: '#ff6b35' },
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0, y: 0, x2: 0, y2: 1,
+                                colorStops: [
+                                    { offset: 0, color: 'rgba(255, 107, 53, 0.3)' },
+                                    { offset: 1, color: 'rgba(255, 107, 53, 0.1)' }
+                                ]
+                            }
+                        }
+                    }]
+                };
+
+                chart.setOption(option);
+            }
+
+            handleSearch(query) {
+                if (!query.trim()) {
+                    this.filteredData = this.resultsData;
+                } else {
+                    // Simple search implementation
+                    const searchResults = JSON.parse(JSON.stringify(this.resultsData));
+                    if (searchResults.data) {
+                        searchResults.data = searchResults.data.filter(post => 
+                            JSON.stringify(post).toLowerCase().includes(query.toLowerCase())
+                        );
+                    }
+                    this.filteredData = searchResults;
+                }
+                this.renderJsonViewer();
+            }
+
+            handleFilter(filterType) {
+                // Simple filter implementation
+                this.filteredData = JSON.parse(JSON.stringify(this.resultsData));
+                
+                if (filterType === 'metadata') {
+                    delete this.filteredData.data;
+                } else if (filterType === 'posts') {
+                    delete this.filteredData.metadata;
+                    delete this.filteredData.statistics;
+                } else if (filterType === 'stats') {
+                    delete this.filteredData.data;
+                    delete this.filteredData.metadata;
+                }
+                
+                this.renderJsonViewer();
+            }
+
+            expandAll() {
+                document.querySelectorAll('.collapsed').forEach(el => {
+                    el.classList.remove('collapsed');
+                });
+                document.querySelectorAll('.collapsible').forEach(el => {
+                    el.classList.add('expanded');
+                });
+            }
+
+            collapseAll() {
+                document.querySelectorAll('.collapsed').forEach(el => {
+                    el.classList.add('collapsed');
+                });
+                document.querySelectorAll('.collapsible').forEach(el => {
+                    el.classList.remove('expanded');
+                });
+            }
+
+            copyJson() {
+                const jsonString = JSON.stringify(this.resultsData, null, 2);
+                navigator.clipboard.writeText(jsonString).then(() => {
+                    const btn = document.getElementById('copyJsonBtn');
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                });
+            }
+
+            downloadJson() {
+                const jsonString = JSON.stringify(this.resultsData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `scraping_results_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            animateElements() {
+                anime({
+                    targets: '.metric-card',
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 600,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+
+                anime({
+                    targets: '.glass-card',
+                    opacity: [0, 1],
+                    translateY: [50, 0],
+                    delay: anime.stagger(200),
+                    duration: 800,
+                    easing: 'easeOutExpo'
+                });
+            }
+
+            formatNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num.toString();
+            }
+        }
+
+        // Global function for collapsible JSON
+        function toggleCollapse(id) {
+            const element = document.getElementById(id);
+            const collapsible = element.previousElementSibling;
+            
+            if (element.classList.contains('collapsed')) {
+                element.classList.remove('collapsed');
+                collapsible.classList.add('expanded');
+            } else {
+                element.classList.add('collapsed');
+                collapsible.classList.remove('expanded');
+            }
+        }
+
+        // Initialize results viewer
+        document.addEventListener('DOMContentLoaded', () => {
+            new ResultsViewer();
+        });
+    </script>
+</body>
+</html>

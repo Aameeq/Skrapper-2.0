@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skraper Web - Full-Stack Social Media Analytics</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #00d4ff;
+            --accent: #ff6b35;
+            --neutral: #f7fafc;
+            --text: #2d3748;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .platform-icon {
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+        }
+        
+        .platform-icon.active {
+            filter: grayscale(0%);
+            transform: scale(1.1);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            height: 4px;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+            to { box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); }
+        }
+        
+        #p5-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .url-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .url-input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #ff8c42);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .auth-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .todo-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+        
+        .todo-completed {
+            opacity: 0.6;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+        }
+        
+        .loading-spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid var(--secondary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .success-message {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 8px 0;
+            animation: slideDown 0.3s ease;
+        }
+        
+        /* Auth UI Styles */
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 12px 24px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-button.github {
+            background: #333;
+            color: white;
+        }
+        
+        .auth-button.github:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+        
+        .auth-button.magic {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .auth-button.magic:hover {
+            background: #0099cc;
+            transform: translateY(-2px);
+        }
+        
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: #9ca3af;
+        }
+        
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #374151;
+            margin: 0 16px;
+        }
+        
+        /* Todo List Styles */
+        .todo-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .todo-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .todo-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .todo-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        .todo-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .add-todo-btn {
+            padding: 12px 24px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .add-todo-btn:hover {
+            background: #0099cc;
+            transform: translateY(-2px);
+        }
+        
+        .add-todo-btn:active {
+            transform: translateY(0);
+        }
+        
+        .todo-list {
+            space-y: 12px;
+        }
+        
+        .todo-empty {
+            text-align: center;
+            padding: 48px 24px;
+            color: #9ca3af;
+        }
+        
+        .todo-empty h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .todo-empty p {
+            font-size: 14px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .auth-container,
+            .todo-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+            
+            .todo-form {
+                flex-direction: column;
+            }
+            
+            .add-todo-btn {
+                width: 100%;
+            }
+        }
+        
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="text-white">
+    <div id="p5-canvas"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <img src="resources/app-icon.png" alt="Skraper" class="w-8 h-8">
+                    <span class="text-xl font-bold gradient-text">Skraper Web</span>
+                </div>
+                
+                <!-- User Section -->
+                <div id="userSection" class="flex items-center space-x-4 hidden">
+                    <div class="flex items-center space-x-2">
+                        <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                        <span id="userName" class="text-sm font-medium"></span>
+                    </div>
+                    <button id="signOutBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Authentication Section -->
+    <section id="authSection" class="pt-24 pb-16 px-6">
+        <div class="auth-container">
+            <div class="auth-card rounded-2xl p-8 text-center">
+                <h1 class="text-3xl font-bold mb-6 gradient-text">Welcome to Skraper Web</h1>
+                <p class="text-gray-300 mb-8">
+                    Sign in to access social media analytics and manage your scraping tasks.
+                </p>
+                
+                <!-- GitHub Sign In -->
+                <button id="signInBtn" class="auth-button github">
+                    <span class="mr-2">🐙</span>
+                    Continue with GitHub
+                </button>
+                
+                <div class="auth-divider">
+                    <span class="text-sm">or</span>
+                </div>
+                
+                <!-- Magic Link Sign Up -->
+                <button id="signUpBtn" class="auth-button magic">
+                    <span class="mr-2">✨</span>
+                    Sign up with Magic Link
+                </button>
+                
+                <div class="mt-8 text-sm text-gray-400">
+                    <p>By signing in, you agree to our terms of service.</p>
+                    <p class="mt-2">Magic links are sent to your email for secure authentication.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Application Section -->
+    <section id="mainSection" class="hidden pt-24 pb-16 px-6">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                    <span class="gradient-text" id="typed-text"></span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Extract structured JSON data from 18+ social media platforms without authorization. 
+                    Fast, reliable, and developer-friendly social media scraping.
+                </p>
+            </div>
+
+            <!-- Todo Management Section -->
+            <div class="glass-card rounded-2xl p-8 mb-12 hover-lift">
+                <h2 class="text-2xl font-bold mb-6 gradient-text text-center">Manage Your Scraping Tasks</h2>
+                
+                <!-- Add Todo Form -->
+                <form id="todoForm" class="todo-form">
+                    <input 
+                        type="text" 
+                        id="todoInput"
+                        placeholder="Add a new scraping task (e.g., Analyze Nike's Instagram)..."
+                        class="todo-input"
+                    >
+                    <button type="submit" class="add-todo-btn">
+                        Add Task
+                    </button>
+                </form>
+                
+                <!-- Todo List -->
+                <div id="todoList" class="todo-list">
+                    <!-- Todos will be rendered here -->
+                </div>
+            </div>
+
+            <!-- URL Input Interface -->
+            <div class="glass-card rounded-2xl p-8 mb-8 hover-lift">
+                <div class="mb-6">
+                    <label class="block text-lg font-medium mb-4">Enter Social Media URL</label>
+                    <div class="relative">
+                        <input 
+                            type="url" 
+                            id="urlInput"
+                            placeholder="https://instagram.com/username, https://tiktok.com/@user, etc..."
+                            class="w-full px-6 py-4 rounded-xl url-input text-white placeholder-gray-400 focus:outline-none"
+                        >
+                        <div id="platformIndicator" class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <!-- Platform icon will appear here -->
+                        </div>
+                    </div>
+                    <div id="urlValidation" class="mt-2 text-sm"></div>
+                </div>
+                
+                <!-- Platform Support Icons -->
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <div class="platform-icon text-3xl floating" data-platform="instagram">📷</div>
+                    <div class="platform-icon text-3xl floating" data-platform="tiktok" style="animation-delay: 0.2s;">🎵</div>
+                    <div class="platform-icon text-3xl floating" data-platform="twitter" style="animation-delay: 0.4s;">🐦</div>
+                    <div class="platform-icon text-3xl floating" data-platform="youtube" style="animation-delay: 0.6s;">📺</div>
+                    <div class="platform-icon text-3xl floating" data-platform="facebook" style="animation-delay: 0.8s;">📘</div>
+                    <div class="platform-icon text-3xl floating" data-platform="reddit" style="animation-delay: 1.0s;">🔴</div>
+                </div>
+            </div>
+
+            <!-- Configuration Panel -->
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- Content Type Selection -->
+                <div class="glass-card rounded-2xl p-6 hover-lift">
+                    <h3 class="text-2xl font-bold mb-6 gradient-text">Content Options</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span>Content Type</span>
+                            <select id="contentType" class="bg-gray-700 text-white px-4 py-2 rounded-lg">
+                                <option value="posts">Posts & Media</option>
+                                <option value="media-only">Media Only</option>
+                                <option value="metadata">Metadata Only</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Output Format</span>
+                            <select id="outputFormat" class="bg-gray-700 text-white px-4 py-2 rounded-lg">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                                <option value="xml">XML</option>
+                                <option value="yaml">YAML</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Limits & Filters -->
+                <div class="glass-card rounded-2xl p-6 hover-lift">
+                    <h3 class="text-2xl font-bold mb-6 gradient-text">Limits & Filters</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block mb-2">Post Limit: <span id="limitValue">50</span></label>
+                            <input 
+                                type="range" 
+                                id="postLimit" 
+                                min="1" 
+                                max="100" 
+                                value="50"
+                                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                            >
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Include Comments</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="includeComments" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Start Scraping Button -->
+            <div class="text-center mb-12">
+                <button 
+                    id="scrapeButton"
+                    class="btn-primary px-12 py-4 rounded-xl text-white font-bold text-lg pulse-glow disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled
+                >
+                    <span id="buttonText">Start Scraping</span>
+                    <div id="loadingSpinner" class="hidden inline-block ml-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </button>
+            </div>
+
+            <!-- Progress Section -->
+            <section id="progressSection" class="py-16 px-6 hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="glass-card rounded-2xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-center gradient-text">Processing...</h3>
+                        <div class="mb-6">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span id="progressStatus">Initializing...</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div id="progressBar" class="progress-bar w-0 h-2 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <div class="text-2xl font-bold text-cyan-400" id="postsScraped">0</div>
+                                <div class="text-sm text-gray-400">Posts Scraped</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-orange-400" id="mediaDownloaded">0</div>
+                                <div class="text-sm text-gray-400">Media Items</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-green-400" id="successRate">100%</div>
+                                <div class="text-sm text-gray-400">Success Rate</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-6">
+                            <button id="cancelButton" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                                Cancel Operation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="py-16 px-6">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-3xl font-bold text-center mb-12 gradient-text">Platform Statistics</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="stats-card rounded-2xl p-6 text-center hover-lift">
+                            <div class="text-3xl font-bold text-cyan-400 mb-2">18+</div>
+                            <div class="text-gray-300">Supported Platforms</div>
+                        </div>
+                        <div class="stats-card rounded-2xl p-6 text-center hover-lift">
+                            <div class="text-3xl font-bold text-orange-400 mb-2">50K+</div>
+                            <div class="text-gray-300">Items Processed</div>
+                        </div>
+                        <div class="stats-card rounded-2xl p-6 text-center hover-lift">
+                            <div class="text-3xl font-bold text-green-400 mb-2">99.9%</div>
+                            <div class="text-gray-300">Success Rate</div>
+                        </div>
+                        <div class="stats-card rounded-2xl p-6 text-center hover-lift">
+                            <div class="text-3xl font-bold text-purple-400 mb-2">24/7</div>
+                            <div class="text-gray-300">Available</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-gray-700">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <img src="resources/app-icon.png" alt="Skraper" class="w-6 h-6">
+                <span class="font-bold gradient-text">Skraper Web</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                © 2024 Skraper Web. Built with Supabase for real-time social media analytics.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Load main application -->
+    <script src="main-functional.js"></script>
+</body>
+</html>

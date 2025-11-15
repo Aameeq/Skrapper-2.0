@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Skraper Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #00d4ff;
+            --accent: #ff6b35;
+            --neutral: #f7fafc;
+            --text: #2d3748;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        
+        .sidebar-nav {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #9ca3af;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--secondary);
+        }
+        
+        .platform-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .endpoint-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-card">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <img src="resources/app-icon.png" alt="Skraper" class="w-8 h-8">
+                    <span class="text-xl font-bold gradient-text">Skraper Web</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="text-white hover:text-cyan-300 transition-colors">Home</a>
+                    <a href="results.html" class="text-white hover:text-cyan-300 transition-colors">Results</a>
+                    <a href="docs.html" class="text-cyan-400 hover:text-cyan-300 transition-colors">Docs</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Documentation Header -->
+    <section class="pt-24 pb-12 px-6">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-5xl font-bold mb-6">
+                <span class="gradient-text">Documentation</span>
+            </h1>
+            <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Complete guide to using Skraper Web for social media data extraction
+            </p>
+        </div>
+    </section>
+
+    <!-- Documentation Content -->
+    <section class="pb-16 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Sidebar Navigation -->
+                <div class="md:col-span-1">
+                    <div class="glass-card rounded-2xl p-6 sidebar-nav">
+                        <h3 class="text-lg font-bold mb-4 gradient-text">Contents</h3>
+                        <nav class="space-y-2">
+                            <a href="#getting-started" class="nav-link">Getting Started</a>
+                            <a href="#platforms" class="nav-link">Supported Platforms</a>
+                            <a href="#usage" class="nav-link">Usage Guide</a>
+                            <a href="#api-reference" class="nav-link">API Reference</a>
+                            <a href="#examples" class="nav-link">Examples</a>
+                            <a href="#limitations" class="nav-link">Limitations</a>
+                            <a href="#faq" class="nav-link">FAQ</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="md:col-span-3 space-y-12">
+                    <!-- Getting Started -->
+                    <div id="getting-started" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">Getting Started</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-3 text-cyan-400">What is Skraper Web?</h3>
+                                <p class="text-gray-300 leading-relaxed">
+                                    Skraper Web is a powerful web application that leverages the Skraper library to extract 
+                                    structured data from 18+ social media platforms without requiring authentication or API keys. 
+                                    It provides JSON-formatted data that can be used for analysis, research, or integration 
+                                    into other applications.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-3 text-cyan-400">Key Features</h3>
+                                <ul class="space-y-2 text-gray-300">
+                                    <li class="flex items-start">
+                                        <span class="text-cyan-400 mr-2">•</span>
+                                        <span>Support for 18+ social media platforms</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-cyan-400 mr-2">•</span>
+                                        <span>No authentication or API keys required</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-cyan-400 mr-2">•</span>
+                                        <span>Multiple output formats (JSON, CSV, XML, YAML)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-cyan-400 mr-2">•</span>
+                                        <span>Real-time processing with progress tracking</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-cyan-400 mr-2">•</span>
+                                        <span>Interactive data visualization and analysis</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-3 text-cyan-400">Quick Start</h3>
+                                <div class="space-y-4">
+                                    <p class="text-gray-300">1. Enter a social media URL in the input field</p>
+                                    <p class="text-gray-300">2. Configure your scraping preferences</p>
+                                    <p class="text-gray-300">3. Click "Start Scraping" to begin extraction</p>
+                                    <p class="text-gray-300">4. View results in the interactive dashboard</p>
+                                    <p class="text-gray-300">5. Export data in your preferred format</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supported Platforms -->
+                    <div id="platforms" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">Supported Platforms</h2>
+                        
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">📷</span>
+                                    <h3 class="font-semibold">Instagram</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: profiles, posts, hashtags, stories</p>
+                                <p class="text-xs text-gray-500">URL format: instagram.com/username</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">🎵</span>
+                                    <h3 class="font-semibold">TikTok</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: user profiles, videos, trends</p>
+                                <p class="text-xs text-gray-500">URL format: tiktok.com/@username</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">🐦</span>
+                                    <h3 class="font-semibold">Twitter/X</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: profiles, tweets, threads</p>
+                                <p class="text-xs text-gray-500">URL format: twitter.com/username</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">📺</span>
+                                    <h3 class="font-semibold">YouTube</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: channels, videos, comments</p>
+                                <p class="text-xs text-gray-500">URL format: youtube.com/c/channel</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">📘</span>
+                                    <h3 class="font-semibold">Facebook</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: pages, groups, posts</p>
+                                <p class="text-xs text-gray-500">URL format: facebook.com/page</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">🔴</span>
+                                    <h3 class="font-semibold">Reddit</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: subreddits, posts, comments</p>
+                                <p class="text-xs text-gray-500">URL format: reddit.com/r/subreddit</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">📌</span>
+                                    <h3 class="font-semibold">Pinterest</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: boards, pins, users</p>
+                                <p class="text-xs text-gray-500">URL format: pinterest.com/username</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">📸</span>
+                                    <h3 class="font-semibold">Flickr</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: photos, albums, users</p>
+                                <p class="text-xs text-gray-500">URL format: flickr.com/photos/username</p>
+                            </div>
+
+                            <div class="endpoint-card rounded-xl p-4">
+                                <div class="flex items-center mb-3">
+                                    <span class="platform-icon">💜</span>
+                                    <h3 class="font-semibold">Tumblr</h3>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-2">Supports: blogs, posts, tags</p>
+                                <p class="text-xs text-gray-500">URL format: username.tumblr.com</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 p-4 bg-yellow-900 bg-opacity-20 border border-yellow-600 rounded-lg">
+                            <h4 class="font-semibold text-yellow-400 mb-2">And 9+ More Platforms</h4>
+                            <p class="text-sm text-gray-300">
+                                Including: Telegram, Twitch, 9GAG, Vimeo, VK, Coub, IFunny, Odnoklassniki, Pikabu
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Usage Guide -->
+                    <div id="usage" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">Usage Guide</h2>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">1. URL Input</h3>
+                                <p class="text-gray-300 mb-4">
+                                    Enter a valid social media URL in the input field. The system will automatically detect 
+                                    the platform and validate the URL format.
+                                </p>
+                                <div class="code-block">
+                                    <div class="text-green-400"># Valid URL Examples:</div>
+                                    <div>https://instagram.com/username</div>
+                                    <div>https://tiktok.com/@username</div>
+                                    <div>https://twitter.com/username</div>
+                                    <div>https://youtube.com/c/channelname</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">2. Configuration Options</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <h4 class="font-semibold text-orange-400 mb-2">Content Type</h4>
+                                        <ul class="text-gray-300 space-y-1">
+                                            <li>• <strong>Posts & Media:</strong> Complete post data with media</li>
+                                            <li>• <strong>Media Only:</strong> Download only images/videos</li>
+                                            <li>• <strong>Metadata Only:</strong> Extract profile and post metadata</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-orange-400 mb-2">Post Limit</h4>
+                                        <p class="text-gray-300">Control the number of posts to scrape (1-100)</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-orange-400 mb-2">Output Format</h4>
+                                        <p class="text-gray-300">Choose from JSON, CSV, XML, or YAML formats</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">3. Processing & Results</h3>
+                                <p class="text-gray-300 mb-4">
+                                    Once scraping begins, you'll see real-time progress updates including:
+                                </p>
+                                <ul class="text-gray-300 space-y-1">
+                                    <li>• Current processing stage</li>
+                                    <li>• Number of posts scraped</li>
+                                    <li>• Media items downloaded</li>
+                                    <li>• Success rate metrics</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Reference -->
+                    <div id="api-reference" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">API Reference</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Response Format</h3>
+                                <p class="text-gray-300 mb-4">All responses follow a consistent JSON structure:</p>
+                                <div class="code-block">
+                                    <pre class="code-font text-sm">{
+  "metadata": {
+    "url": "https://instagram.com/username",
+    "platform": "instagram",
+    "scraped_at": "2024-01-15T10:30:00Z",
+    "content_type": "posts",
+    "output_format": "json",
+    "limit": 50
+  },
+  "data": [
+    {
+      "id": "post_1",
+      "username": "sample_user",
+      "content": "Post content here",
+      "timestamp": "2024-01-14T15:30:00Z",
+      "likes": 245,
+      "comments": 12,
+      "shares": 3,
+      "media_url": "https://example.com/media.jpg",
+      "caption": "Post caption",
+      "hashtags": ["#tag1", "#tag2"],
+      "mentions": []
+    }
+  ],
+  "statistics": {
+    "total_posts": 20,
+    "media_items": 35,
+    "engagement_metrics": {
+      "total_likes": 15420,
+      "total_comments": 892,
+      "total_shares": 234
+    }
+  }
+}</pre>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Data Fields</h3>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div class="endpoint-card rounded-lg p-4">
+                                        <h4 class="font-semibold text-orange-400 mb-2">Post Object</h4>
+                                        <ul class="text-sm text-gray-300 space-y-1">
+                                            <li><strong>id:</strong> Unique post identifier</li>
+                                            <li><strong>username:</strong> Post author</li>
+                                            <li><strong>content:</strong> Post text content</li>
+                                            <li><strong>timestamp:</strong> ISO 8601 date</li>
+                                            <li><strong>likes:</strong> Like count</li>
+                                            <li><strong>comments:</strong> Comment count</li>
+                                            <li><strong>shares:</strong> Share count</li>
+                                            <li><strong>media_url:</strong> Media file URL</li>
+                                            <li><strong>hashtags:</strong> Array of hashtags</li>
+                                            <li><strong>mentions:</strong> Array of mentions</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="endpoint-card rounded-lg p-4">
+                                        <h4 class="font-semibold text-orange-400 mb-2">Statistics Object</h4>
+                                        <ul class="text-sm text-gray-300 space-y-1">
+                                            <li><strong>total_posts:</strong> Number of posts</li>
+                                            <li><strong>media_items:</strong> Media files count</li>
+                                            <li><strong>engagement_metrics:</strong> Engagement data</li>
+                                            <li><strong>total_likes:</strong> Sum of all likes</li>
+                                            <li><strong>total_comments:</strong> Sum of comments</li>
+                                            <li><strong>total_shares:</strong> Sum of shares</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Examples -->
+                    <div id="examples" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">Examples</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Basic Usage</h3>
+                                <p class="text-gray-300 mb-4">Extract posts from an Instagram profile:</p>
+                                <div class="code-block">
+                                    <div class="text-gray-400 mb-2"># Input URL</div>
+                                    <div>https://instagram.com/natgeo</div>
+                                    <div class="text-gray-400 mt-4 mb-2"># Configuration</div>
+                                    <div>Content Type: Posts & Media</div>
+                                    <div>Post Limit: 25</div>
+                                    <div>Output Format: JSON</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Data Analysis</h3>
+                                <p class="text-gray-300 mb-4">Analyze engagement patterns:</p>
+                                <div class="code-block">
+                                    <div class="text-gray-400 mb-2"># Sample Analysis with Python</div>
+                                    <pre class="code-font text-sm">import json
+import matplotlib.pyplot as plt
+
+# Load scraped data
+with open('scraped_data.json', 'r') as f:
+    data = json.load(f)
+
+# Extract engagement metrics
+posts = data['data']
+likes = [post['likes'] for post in posts]
+dates = [post['timestamp'][:10] for post in posts]
+
+# Create engagement chart
+plt.figure(figsize=(12, 6))
+plt.plot(dates, likes, marker='o')
+plt.title('Engagement Over Time')
+plt.xlabel('Date')
+plt.ylabel('Likes')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()</pre>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Export to Database</h3>
+                                <p class="text-gray-300 mb-4">Store results in a database:</p>
+                                <div class="code-block">
+                                    <div class="text-gray-400 mb-2"># MongoDB Example</div>
+                                    <pre class="code-font text-sm">from pymongo import MongoClient
+import json
+
+# Connect to MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+db = client['social_media']
+collection = db['scraped_posts']
+
+# Load and insert data
+with open('scraped_data.json', 'r') as f:
+    data = json.load(f)
+    collection.insert_many(data['data'])
+
+print(f"Inserted {len(data['data'])} posts")</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Limitations -->
+                    <div id="limitations" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">Limitations & Considerations</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="p-4 bg-red-900 bg-opacity-20 border border-red-600 rounded-lg">
+                                <h3 class="font-semibold text-red-400 mb-2">Important Legal Notice</h3>
+                                <p class="text-sm text-gray-300">
+                                    Always ensure you have the right to scrape and use data from social media platforms. 
+                                    Respect platform terms of service, user privacy, and applicable laws. This tool should 
+                                    only be used for legitimate research, analysis, and educational purposes.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Technical Limitations</h3>
+                                <ul class="text-gray-300 space-y-2">
+                                    <li>• Rate limiting may affect large-scale scraping</li>
+                                    <li>• Some platforms may block scraping attempts</li>
+                                    <li>• Private/protected content cannot be accessed</li>
+                                    <li>• Platform changes may break functionality</li>
+                                    <li>• Real-time data may have slight delays</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 text-cyan-400">Best Practices</h3>
+                                <ul class="text-gray-300 space-y-2">
+                                    <li>• Start with small batches to test functionality</li>
+                                    <li>• Respect rate limits and implement delays</li>
+                                    <li>• Handle errors gracefully in your applications</li>
+                                    <li>• Keep your scraping activities ethical and legal</li>
+                                    <li>• Monitor for platform changes that may affect scraping</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div id="faq" class="glass-card rounded-2xl p-8 hover-lift">
+                        <h2 class="text-3xl font-bold mb-6 gradient-text">Frequently Asked Questions</h2>
+                        
+                        <div class="space-y-6">
+                            <div class="endpoint-card rounded-lg p-6">
+                                <h3 class="text-lg font-semibold mb-3 text-cyan-400">Is this service free to use?</h3>
+                                <p class="text-gray-300">
+                                    Yes, Skraper Web is currently free for basic usage. However, please be mindful of rate limits 
+                                    and use the service responsibly.
+                                </p>
+                            </div>
+
+                            <div class="endpoint-card rounded-lg p-6">
+                                <h3 class="text-lg font-semibold mb-3 text-cyan-400">Do I need API keys?</h3>
+                                <p class="text-gray-300">
+                                    No, Skraper Web works without any API keys or authentication. It uses public data scraping 
+                                    techniques to extract information.
+                                </p>
+                            </div>
+
+                            <div class="endpoint-card rounded-lg p-6">
+                                <h3 class="text-lg font-semibold mb-3 text-cyan-400">How accurate is the data?</h3>
+                                <p class="text-gray-300">
+                                    The data accuracy depends on the platform and current website structure. We strive for 
+                                    99%+ accuracy, but platform changes can temporarily affect results.
+                                </p>
+                            </div>
+
+                            <div class="endpoint-card rounded-lg p-6">
+                                <h3 class="text-lg font-semibold mb-3 text-cyan-400">Can I scrape private profiles?</h3>
+                                <p class="text-gray-300">
+                                    No, Skraper Web only accesses publicly available content. Private profiles, restricted 
+                                    content, and content requiring login cannot be scraped.
+                                </p>
+                            </div>
+
+                            <div class="endpoint-card rounded-lg p-6">
+                                <h3 class="text-lg font-semibold mb-3 text-cyan-400">What if scraping fails?</h3>
+                                <p class="text-gray-300">
+                                    If scraping fails, try again later. The platform may have made changes, or there might 
+                                    be temporary connectivity issues. Check our status page for known issues.
+                                </p>
+                            </div>
+
+                            <div class="endpoint-card rounded-lg p-6">
+                                <h3 class="text-lg font-semibold mb-3 text-cyan-400">How often can I scrape?</h3>
+                                <p class="text-gray-300">
+                                    There's no strict limit, but we recommend reasonable intervals between requests to avoid 
+                                    being blocked by platforms. Consider implementing delays in your workflow.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-gray-700">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <img src="resources/app-icon.png" alt="Skraper" class="w-6 h-6">
+                <span class="font-bold gradient-text">Skraper Web</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                © 2024 Skraper Web. Built with the Skraper library for social media data extraction.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Documentation page functionality
+        class DocumentationPage {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupNavigation();
+                this.animateElements();
+                this.setupSmoothScrolling();
+            }
+
+            setupNavigation() {
+                const navLinks = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('[id]');
+
+                // Update active nav link based on scroll position
+                window.addEventListener('scroll', () => {
+                    let current = '';
+                    sections.forEach(section => {
+                        const sectionTop = section.offsetTop - 150;
+                        if (window.pageYOffset >= sectionTop) {
+                            current = section.getAttribute('id');
+                        }
+                    });
+
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${current}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                });
+
+                // Handle nav link clicks
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const targetId = link.getAttribute('href').substring(1);
+                        const targetSection = document.getElementById(targetId);
+                        if (targetSection) {
+                            targetSection.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            }
+
+            setupSmoothScrolling() {
+                // Smooth scrolling for anchor links
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            }
+
+            animateElements() {
+                // Animate cards on scroll
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            anime({
+                                targets: entry.target,
+                                opacity: [0, 1],
+                                translateY: [50, 0],
+                                duration: 800,
+                                easing: 'easeOutExpo'
+                            });
+                        }
+                    });
+                }, observerOptions);
+
+                // Observe all glass cards
+                document.querySelectorAll('.glass-card').forEach(card => {
+                    observer.observe(card);
+                });
+
+                // Animate endpoint cards
+                anime({
+                    targets: '.endpoint-card',
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 600,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+            }
+        }
+
+        // Initialize documentation page
+        document.addEventListener('DOMContentLoaded', () => {
+            new DocumentationPage();
+        });
+    </script>
+</body>
+</html>
