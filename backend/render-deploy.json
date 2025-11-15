@@ -1,0 +1,17 @@
+{
+  "name": "skraper-backend",
+  "type": "web",
+  "env": "docker",
+  "dockerfilePath": "./Dockerfile",
+  "autoDeploy": true,
+  "envVars": [
+    {
+      "key": "PORT",
+      "value": "5000"
+    },
+    {
+      "key": "FLASK_ENV",
+      "value": "production"
+    }
+  ]
+}
