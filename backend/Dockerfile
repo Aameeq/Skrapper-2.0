@@ -1,22 +1,21 @@
-FROM python:3.11-slim
+﻿# Use a base image that includes OpenJDK 17
+FROM openjdk:17-jdk-slim
 
-# Install Java (required for Skraper)
-RUN apt-get update && apt-get install -y \
-    openjdk-17-jre-headless \
-    curl \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
+# Install Python and pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-dev python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Skraper CLI tool
-RUN wget -O /usr/local/bin/skraper https://github.com/sokomishalov/skraper/releases/download/0.13.0/skraper \
-    && chmod +x /usr/local/bin/skraper
-
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install Skraper CLI tool (using the correct path for the new base image)
+RUN wget -O /usr/local/bin/skraper https://github.com/sokomishalov/skraper/releases/download/0.13.0/skraper   \
+    && chmod +x /usr/local/bin/skraper
 
 # Copy application code
 COPY app.py .
