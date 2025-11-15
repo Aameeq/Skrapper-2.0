@@ -1,12 +1,17 @@
-﻿# Use a base image that includes OpenJDK 17 (Eclipse Temurin)
-FROM eclipse-temurin:17-jdk-slim
+﻿# Use a base image that includes OpenJDK 17 (Standard library image)
+FROM openjdk:17-jdk-slim
+
+# Install Python and pip (required for the backend)
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Install Skraper CLI tool
 RUN wget -O /usr/local/bin/skraper https://github.com/sokomishalov/skraper/releases/download/0.13.0/skraper   \
