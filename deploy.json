@@ -1,0 +1,5 @@
+{
+  "name": "skraper-backend",
+  "type": "web",
+  "env": "docker"
+}

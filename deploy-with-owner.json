@@ -1,0 +1,23 @@
+{
+  "name": "skraper-backend",
+  "type": "web",
+  "env": "docker",
+  "ownerId": "tea-d4c5sv7diees738u7cj0",
+  "dockerfilePath": "./Dockerfile",
+  "autoDeploy": true,
+  "serviceDetails": {
+    "dockerCommand": "",
+    "dockerContext": ".",
+    "registryCredentialId": ""
+  },
+  "envVars": [
+    {
+      "key": "PORT",
+      "value": "5000"
+    },
+    {
+      "key": "FLASK_ENV",
+      "value": "production"
+    }
+  ]
+}
