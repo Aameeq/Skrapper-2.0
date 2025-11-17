@@ -1,4 +1,4 @@
-﻿# Use a base image that includes OpenJDK 17 (Eclipse Temurin - Official Replacement)
+# Use a base image that includes OpenJDK 17 (Eclipse Temurin - Official Replacement)
 FROM eclipse-temurin:17-jdk
 
 # Install Python, pip, venv, and wget (required for the backend and downloading skraper)
@@ -17,7 +17,7 @@ RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Make sure the virtual environment's Python and pip are used
-ENV PATH="/opt/venv/bin:"
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application code
 COPY app.py .
