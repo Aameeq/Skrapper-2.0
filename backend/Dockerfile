@@ -3,7 +3,7 @@ FROM eclipse-temurin:17-jdk
 
 # Install Python, pip, venv, wget, and git (for cloning Skraper)
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv wget git && \
+    apt-get install -y python3 python3-pip python3-venv wget git gradle && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -26,7 +26,7 @@ COPY app.py .
 WORKDIR /tmp
 RUN git clone https://github.com/sokomishalov/skraper.git && \
     cd skraper && \
-    ./gradlew build --no-daemon && \
+    gradle build --no-daemon && \
     cp build/libs/skraper /usr/local/bin/ && \
     chmod +x /usr/local/bin/skraper && \
     rm -rf /tmp/skraper
