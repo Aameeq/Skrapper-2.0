@@ -1,6 +1,11 @@
 ﻿# Use a base image that includes OpenJDK 17 (Eclipse Temurin - Official Replacement)
 FROM eclipse-temurin:17-jdk
 
+# Install Python and pip (required for the backend)
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
+
 # Set the working directory
 WORKDIR /app
 
