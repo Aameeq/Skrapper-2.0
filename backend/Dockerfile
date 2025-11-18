@@ -17,13 +17,14 @@ RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Make sure the virtual environment's Python and pip are used
+# CRITICAL FIX: Prepend venv bin to existing PATH, don't replace it
 ENV PATH="/opt/venv/bin:"
 
 # Copy application code
 COPY app.py .
 
 # Install Skraper CLI tool (Download pre-built binary)
-RUN wget -O /usr/local/bin/skraper https://github.com/sokomishalov/skraper/releases/download/0.13.0/skraper   \
+RUN wget -O /usr/local/bin/skraper https://github.com/sokomishalov/skraper/releases/download/0.13.0/skraper     \
     && chmod +x /usr/local/bin/skraper
 
 # Expose port
