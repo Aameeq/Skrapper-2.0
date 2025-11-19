@@ -31,5 +31,6 @@ EXPOSE 5000
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
-# Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "app:app"]
+# Run the application using explicit /bin/sh (fallback if exec form has issues in Render env)
+# The exec form CMD ["gunicorn", ...] should normally use /bin/sh, but this is more explicit.
+CMD ["/bin/sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 4 app:app"]
