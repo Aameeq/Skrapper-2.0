@@ -1,11 +1,12 @@
-﻿# Use a base image that includes OpenJDK 17 (Eclipse Temurin - Official Replacement)
-FROM eclipse-temurin:17-jdk
+﻿# Use a standard Python slim base image
+FROM python:3.10-slim
 
-# Install Python, pip, venv, wget, git, yt-dlp, and bash (required for the backend and potential runtime)
-# bash is included to mitigate potential /usr/bin/env: 'bash': No such file or directory errors
-# Although /bin/sh should be sufficient for the exec form CMD, this covers potential edge cases.
+# Install Java (if still needed for any part of the application, though yt-dlp doesn't require it directly)
+# Also install yt-dlp, bash, and other dependencies
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv wget git yt-dlp bash && \
+    apt-get install -y openjdk-17-jdk wget git yt-dlp bash && \
+    # Ensure python3-pip is available (usually included in python:3.10-slim, but good to be sure)
+    apt-get install -y python3-pip python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -32,7 +33,5 @@ EXPOSE 5000
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
-# Run the application using explicit /bin/sh -c command.
-# This ensures the command runs under the standard POSIX shell (/bin/sh), not bash.
-# The 'exec form' CMD ["gunicorn", ...] *should* do this, but this format guarantees it.
-CMD ["/bin/sh", "-c", "exec gunicorn --bind 0.0.0.0:5000 --workers 4 app:app"]
+# Run the application using exec form (should default to /bin/sh)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "app:app"]
