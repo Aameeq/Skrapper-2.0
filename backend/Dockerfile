@@ -1,9 +1,9 @@
 ﻿# Use a base image that includes OpenJDK 17 (Eclipse Temurin - Official Replacement)
 FROM eclipse-temurin:17-jdk
 
-# Install Python, pip, venv, and wget (required for the backend and downloading skraper)
+# Install Python, pip, venv, wget, git, and yt-dlp (required for the backend)
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv wget && \
+    apt-get install -y python3 python3-pip python3-venv wget git yt-dlp && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -17,15 +17,11 @@ RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Make sure the virtual environment's Python and pip are used
-# CRITICAL FIX: Prepend venv bin to existing PATH, don't replace it
+# CRITICAL FIX: Prepend venv bin to existing PATH
 ENV PATH="/opt/venv/bin:"
 
 # Copy application code
 COPY app.py .
-
-# Install Skraper CLI tool (Download pre-built binary)
-RUN wget -O /usr/local/bin/skraper https://github.com/sokomishalov/skraper/releases/download/0.13.0/skraper     \
-    && chmod +x /usr/local/bin/skraper
 
 # Expose port
 EXPOSE 5000

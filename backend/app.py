@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Skraper Web Backend - Flask API Service
-Integrates with Skraper CLI tool to provide web scraping functionality
+Skraper Web Backend - Flask API Service (Modified to use yt-dlp)
+Integrates with yt-dlp to provide web scraping functionality
 """
 
 import os
@@ -22,11 +22,11 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Supported platforms mapping
+# Supported platforms mapping (may need adjustment for yt-dlp)
 SUPPORTED_PLATFORMS = {
     'instagram': 'instagram',
-    'tiktok': 'tiktok', 
-    'twitter': 'twitter',
+    'tiktok': 'tiktok',
+    'twitter': 'twitter', # X
     'youtube': 'youtube',
     'facebook': 'facebook',
     'reddit': 'reddit',
@@ -45,38 +45,16 @@ SUPPORTED_PLATFORMS = {
 }
 
 class SkraperService:
-    """Service class to handle Skraper operations"""
-    
+    """Service class to handle yt-dlp operations (was Skraper)"""
+
     def __init__(self):
-        self.skraper_path = self._find_skraper_executable()
-    
-    def _find_skraper_executable(self):
-        """Find the skraper executable"""
-        # Try common installation paths
-        possible_paths = [
-            '/usr/local/bin/skraper',
-            '/usr/bin/skraper',
-            os.path.expanduser('~/.local/bin/skraper'),
-            os.path.join(os.getcwd(), 'skraper'),
-            'skraper'  # Assume in PATH
-        ]
-        
-        for path in possible_paths:
-            if os.path.exists(path) and os.access(path, os.X_OK):
-                return path
-        
-        # Check if skraper is in PATH
-        try:
-            result = subprocess.run(['which', 'skraper'], capture_output=True, text=True)
-            if result.returncode == 0:
-                return result.stdout.strip()
-        except:
-            pass
-            
-        return None
-    
+        # yt-dlp is installed system-wide, so we just need to call it
+        # No need to find a specific executable path like Skraper
+        self.yt_dlp_path = "yt-dlp" # Assumes yt-dlp is in PATH
+
     def detect_platform(self, url):
-        """Detect social media platform from URL"""
+        """Detect social media platform from URL (basic pattern matching)"""
+        # This is a simplified detector, yt-dlp handles many more internally
         patterns = {
             'instagram': r'(?:instagram\.com|instagr\.am)',
             'tiktok': r'tiktok\.com',
@@ -97,133 +75,107 @@ class SkraperService:
             'odnoklassniki': r'odnoklassniki\.ru',
             'pikabu': r'pikabu\.ru'
         }
-        
+
         for platform, pattern in patterns.items():
             if re.search(pattern, url, re.IGNORECASE):
                 return platform
-        
+
         return None
-    
-    def extract_path_from_url(self, url, platform):
-        """Extract the path component needed by Skraper"""
-        # Remove protocol and domain, keep the path
-        path = re.sub(r'^https?://[^/]+', '', url)
-        
-        # Platform-specific path extraction
-        if platform == 'instagram':
-            # Extract username or path
-            match = re.search(r'/([^/?]+)', path)
-            return match.group(1) if match else path
-        elif platform == 'tiktok':
-            # Extract @username
-            match = re.search(r'/@([^/?]+)', path)
-            return f"/@{match.group(1)}" if match else path
-        elif platform == 'twitter':
-            # Extract username
-            match = re.search(r'/([^/?]+)', path)
-            return match.group(1) if match else path
-        elif platform == 'youtube':
-            # Extract channel/user path
-            return path  # Keep full path for YouTube
-        
-        return path
-    
+
     def scrape_data(self, url, content_type='posts', limit=50, output_format='json'):
-        """Scrape data using Skraper CLI"""
-        
-        if not self.skraper_path:
-            raise Exception("Skraper executable not found. Please install Skraper CLI tool.")
-        
-        # Detect platform
-        platform = self.detect_platform(url)
-        if not platform:
-            raise Exception(f"Unsupported platform for URL: {url}")
-        
-        # Extract path
-        path = self.extract_path_from_url(url, platform)
-        
-        # Build command
+        """Scrape data using yt-dlp"""
+
+        # yt-dlp often works directly with the full URL
+        # It handles platform detection internally
+        # Limiting posts might require playlist options, which vary by site
+        # For now, focus on getting metadata for the URL provided
+
+        # Build command for yt-dlp to dump JSON metadata
         cmd = [
-            self.skraper_path,
-            platform,
-            path,
-            '-n', str(limit),
-            '-t', output_format
+            self.yt_dlp_path,
+            '--dump-json',  # Output metadata in JSON format
+            '--no-playlist', # Only info for the item itself, not a playlist/channel (if applicable)
+            # '--playlist-start', '1', # Example if limiting items within a playlist
+            # '--playlist-end', str(limit), # Example if limiting items within a playlist
+            '--extractor-args', 'youtube:player_client=default', # Sometimes helps with YouTube
+            url
         ]
-        
-        if content_type == 'media-only':
-            cmd.append('-m')
-        
+
         logger.info(f"Running command: {' '.join(cmd)}")
-        
+
         try:
-            # Run skraper command
+            # Run yt-dlp command
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 timeout=300  # 5 minute timeout
             )
-            
+
             if result.returncode != 0:
-                logger.error(f"Skraper error: {result.stderr}")
+                logger.error(f"Yt-dlp error: {result.stderr}")
                 raise Exception(f"Scraping failed: {result.stderr}")
-            
-            # Parse the output
-            if output_format == 'json':
-                try:
-                    return json.loads(result.stdout)
-                except json.JSONDecodeError:
-                    logger.error(f"Invalid JSON output: {result.stdout[:500]}")
-                    raise Exception("Invalid response format from Skraper")
-            else:
-                return {"raw_output": result.stdout}
-                
+
+            # yt-dlp --dump-json outputs one JSON object per line for each video/file found
+            # If the URL points to a single post/video, it should output one line.
+            # If it's a user profile or playlist, it might output multiple lines.
+            output_lines = result.stdout.strip().split('\n')
+
+            if not output_lines or output_lines == ['']:
+                 raise Exception("Yt-dlp returned no output.")
+
+            # Attempt to parse the first line as JSON (often the primary item)
+            # For more complex scenarios (playlists), you'd iterate through lines
+            try:
+                raw_data = json.loads(output_lines[0])
+                logger.info("Successfully parsed yt-dlp output as JSON")
+                return raw_data
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to decode JSON output from yt-dlp: {e}")
+                logger.debug(f"Raw yt-dlp output (first 500 chars): {result.stdout[:500]}")
+                raise Exception("Invalid JSON response format from yt-dlp")
+
         except subprocess.TimeoutExpired:
             raise Exception("Scraping timeout - operation took too long")
         except Exception as e:
-            logger.error(f"Error running skraper: {str(e)}")
+            logger.error(f"Error running yt-dlp: {str(e)}")
             raise
-    
+
     def format_results_for_web(self, raw_data, url, platform, limit):
-        """Format skraper results for web frontend"""
-        
+        """Format yt-dlp results for web frontend (Adapted from Skraper formatting)"""
+        # This is a basic adaptation. yt-dlp's JSON schema differs from Skraper's.
+        # You'll need to map fields from aw_data (yt-dlp output) to your desired web format.
+
         # Create metadata
         metadata = {
             "url": url,
-            "platform": platform,
+            "platform": platform, # Detected platform
             "scraped_at": datetime.utcnow().isoformat() + "Z",
-            "content_type": "posts",
+            "content_type": "posts", # Or adapt based on yt-dlp output
             "output_format": "json",
-            "limit": limit
+            "limit": limit # Applied limit (if applicable)
         }
-        
-        # Format data based on platform and response format
+
+        # Example of mapping common fields from yt-dlp output
+        # yt-dlp fields might include: id, title, description, uploader, upload_date, duration, view_count, like_count, thumbnail, formats, etc.
         formatted_data = []
-        
-        if isinstance(raw_data, list):
-            # Direct list of posts
-            for i, item in enumerate(raw_data[:limit]):
-                formatted_post = self.format_post_item(item, platform, i)
-                formatted_data.append(formatted_post)
-        elif isinstance(raw_data, dict):
-            # Structured response
-            if 'posts' in raw_data:
-                posts = raw_data['posts']
-            elif 'data' in raw_data:
-                posts = raw_data['data']
-            else:
-                posts = [raw_data]
-            
-            for i, item in enumerate(posts[:limit]):
-                formatted_post = self.format_post_item(item, platform, i)
-                formatted_data.append(formatted_post)
-        
-        # Calculate statistics
+
+        # Assuming aw_data is a single item's metadata dict from yt-dlp
+        if isinstance(raw_data, dict):
+            formatted_post = self.format_post_item_ytdlp(raw_data, platform, 0) # Index 0 for single item
+            formatted_data.append(formatted_post)
+        # If aw_data was a list (e.g., from a playlist), iterate through it.
+        # elif isinstance(raw_data, list):
+        #    for i, item in enumerate(raw_data[:limit]): # Apply limit here if needed
+        #        formatted_post = self.format_post_item_ytdlp(item, platform, i)
+        #        formatted_data.append(formatted_post)
+
+        # Calculate statistics (example based on common yt-dlp fields)
         total_likes = sum(post.get('likes', 0) for post in formatted_data)
         total_comments = sum(post.get('comments', 0) for post in formatted_data)
-        total_shares = sum(post.get('shares', 0) for post in formatted_data)
-        
+        # Note: yt-dlp doesn't always get comment counts, unlike Skraper potentially parsing HTML
+        total_shares = 0 # Shares are rarely available via public API scraping
+
         statistics = {
             "total_posts": len(formatted_data),
             "media_items": len([p for p in formatted_data if p.get('media_url')]),
@@ -233,47 +185,46 @@ class SkraperService:
                 "total_shares": total_shares
             }
         }
-        
+
         return {
             "metadata": metadata,
             "data": formatted_data,
             "statistics": statistics
         }
-    
-    def format_post_item(self, item, platform, index):
-        """Format a single post item"""
-        
-        # Handle different response formats from different platforms
-        if isinstance(item, dict):
-            # Direct post object
-            return {
-                "id": item.get('id', f"post_{index + 1}"),
-                "username": item.get('username', 'unknown'),
-                "content": item.get('content', item.get('text', item.get('caption', ''))),
-                "timestamp": item.get('timestamp', item.get('created_at', datetime.utcnow().isoformat())),
-                "likes": item.get('likes', item.get('like_count', 0)),
-                "comments": item.get('comments', item.get('comment_count', 0)),
-                "shares": item.get('shares', item.get('share_count', 0)),
-                "media_url": item.get('media_url', item.get('image_url', item.get('video_url', '')),
-                "caption": item.get('caption', ''),
-                "hashtags": item.get('hashtags', []),
-                "mentions": item.get('mentions', [])
-            }
-        else:
-            # String content
-            return {
-                "id": f"post_{index + 1}",
-                "username": "unknown",
-                "content": str(item),
-                "timestamp": datetime.utcnow().isoformat(),
-                "likes": 0,
-                "comments": 0,
-                "shares": 0,
-                "media_url": "",
-                "caption": "",
-                "hashtags": [],
-                "mentions": []
-            }
+
+    def format_post_item_ytdlp(self, item, platform, index):
+        """Format a single item from yt-dlp output"""
+        # Map yt-dlp fields to your desired schema
+        # Example mapping - adjust based on actual yt-dlp output and your frontend needs
+        return {
+            "id": item.get('id', f"item_{index + 1}"), # Use yt-dlp's ID or generate one
+            "username": item.get('uploader', 'unknown'), # Often 'uploader'
+            "content": item.get('description', item.get('title', '')), # Description or title as content
+            "timestamp": self._convert_ytdlp_date(item.get('upload_date')), # Convert date format
+            "likes": item.get('like_count', 0), # Use like_count if available
+            "comments": item.get('comment_count', 0), # Use comment_count if available
+            "shares": 0, # Shares usually not available via yt-dlp
+            "media_url": item.get('thumbnail', ''), # Thumbnail URL, or primary video/audio URL from 'formats'
+            "caption": item.get('description', ''), # Description often serves as caption
+            "hashtags": [], # yt-dlp rarely extracts hashtags directly
+            "mentions": [], # yt-dlp rarely extracts mentions directly
+            "duration": item.get('duration'), # Duration in seconds
+            "view_count": item.get('view_count', 0) # View count if available
+        }
+
+    def _convert_ytdlp_date(self, ytdlp_date_str):
+        """Convert yt-dlp date string (YYYYMMDD) to ISO format"""
+        if ytdlp_date_str and len(ytdlp_date_str) == 8:
+            try:
+                year = int(ytdlp_date_str[0:4])
+                month = int(ytdlp_date_str[4:6])
+                day = int(ytdlp_date_str[6:8])
+                dt = datetime(year, month, day)
+                return dt.isoformat() + "Z"
+            except (ValueError, IndexError):
+                pass # Return original string or None if conversion fails
+        return ytdlp_date_str # Return original if format is unexpected
+
 
 # Initialize service
 skraper_service = SkraperService()
@@ -282,9 +233,9 @@ skraper_service = SkraperService()
 def index():
     """Root endpoint with API information"""
     return jsonify({
-        "name": "Skraper Web API",
+        "name": "Skraper Web API (using yt-dlp)",
         "version": "1.0.0",
-        "description": "Web API for social media scraping using Skraper library",
+        "description": "Web API for social media scraping using yt-dlp library",
         "endpoints": {
             "GET /health": "Health check",
             "POST /api/scrape": "Scrape social media data",
@@ -295,17 +246,24 @@ def index():
 @app.route('/health')
 def health():
     """Health check endpoint"""
+    # Check if yt-dlp is available by running a simple command
+    try:
+        result = subprocess.run(['yt-dlp', '--version'], capture_output=True, text=True, timeout=10)
+        yt_dlp_available = result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        yt_dlp_available = False
+
     return jsonify({
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "skraper_available": skraper_service.skraper_path is not None
+        "yt_dlp_available": yt_dlp_available
     })
 
 @app.route('/api/platforms')
 def get_platforms():
     """Get supported platforms"""
     return jsonify({
-        "platforms": list(SUPPORTED_PLATFORMS.keys()),
+        "platforms": list(SUPPORTED_PLATFORMS.keys()), # Use the list from SUPPORTED_PLATFORMS
         "count": len(SUPPORTED_PLATFORMS)
     })
 
@@ -314,35 +272,35 @@ def scrape_endpoint():
     """Main scraping endpoint"""
     try:
         data = request.get_json()
-        
+
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
-        
+
         url = data.get('url')
         if not url:
             return jsonify({"error": "URL is required"}), 400
-        
+
         # Optional parameters
         content_type = data.get('content_type', 'posts')
-        limit = min(int(data.get('limit', 50)), 100)  # Max 100 posts
+        limit = min(int(data.get('limit', 50)), 100)  # Max 100 posts (adjust as needed)
         output_format = data.get('output_format', 'json')
-        
-        # Scrape data
+
+        # Scrape data using yt-dlp
         raw_data = skraper_service.scrape_data(
             url=url,
             content_type=content_type,
             limit=limit,
             output_format=output_format
         )
-        
-        # Format results
+
+        # Format results using the adapted formatter
         platform = skraper_service.detect_platform(url)
         formatted_results = skraper_service.format_results_for_web(
             raw_data, url, platform, limit
         )
-        
+
         return jsonify(formatted_results)
-        
+
     except Exception as e:
         logger.error(f"Scraping error: {str(e)}")
         return jsonify({
@@ -353,10 +311,17 @@ def scrape_endpoint():
 @app.route('/api/scrape/status')
 def scrape_status():
     """Check scraping service status"""
+    # Check if yt-dlp is available
+    try:
+        result = subprocess.run(['yt-dlp', '--version'], capture_output=True, text=True, timeout=10)
+        yt_dlp_available = result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        yt_dlp_available = False
+
     return jsonify({
-        "skraper_available": skraper_service.skraper_path is not None,
-        "skraper_path": skraper_service.skraper_path,
-        "supported_platforms": len(SUPPORTED_PLATFORMS),
+        "yt_dlp_available": yt_dlp_available,
+        "yt_dlp_path": "yt-dlp", # Path is system-wide
+        "supported_platforms": len(SUPPORTED_PLATFORMS), # Approximation
         "timestamp": datetime.utcnow().isoformat()
     })
 
@@ -370,13 +335,19 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
-    # Check if skraper is available
-    if not skraper_service.skraper_path:
-        logger.warning("Skraper executable not found. Please install Skraper CLI tool.")
-        logger.info("Installation instructions: https://github.com/sokomishalov/skraper")
-    else:
-        logger.info(f"Skraper executable found at: {skraper_service.skraper_path}")
-    
+    # Check if yt-dlp is available (optional startup check)
+    try:
+        result = subprocess.run(['yt-dlp', '--version'], capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            logger.info("Yt-dlp executable found and accessible.")
+        else:
+            logger.warning("Yt-dlp executable not found or not accessible via 'yt-dlp' command.")
+    except FileNotFoundError:
+        logger.warning("Yt-dlp executable not found. Please install yt-dlp.")
+    except subprocess.TimeoutExpired:
+        logger.warning("Yt-dlp version check timed out.")
+
     # Run the application
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
