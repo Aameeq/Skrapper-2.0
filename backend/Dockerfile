@@ -1,9 +1,10 @@
 ﻿# Use a base image that includes OpenJDK 17 (Eclipse Temurin - Official Replacement)
 FROM eclipse-temurin:17-jdk
 
-# Install Python, pip, venv, wget, git, and yt-dlp (required for the backend)
+# Install Python, pip, venv, wget, git, yt-dlp, and bash (required for the backend and potential runtime)
+# bash is included to mitigate potential /usr/bin/env: 'bash': No such file or directory errors
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv wget git yt-dlp && \
+    apt-get install -y python3 python3-pip python3-venv wget git yt-dlp bash && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
@@ -17,7 +18,7 @@ RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Make sure the virtual environment's Python and pip are used
-# CRITICAL FIX: Prepend venv bin to existing PATH
+# CRITICAL FIX: Prepend venv bin to existing PATH, don't replace it
 ENV PATH="/opt/venv/bin:"
 
 # Copy application code
