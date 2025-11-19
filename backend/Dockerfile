@@ -1,12 +1,10 @@
 ﻿# Use a standard Python slim base image
 FROM python:3.10-slim
 
-# Install Java (if still needed for any part of the application, though yt-dlp doesn't require it directly)
-# Also install yt-dlp, bash, and other dependencies
+# Install yt-dlp, bash, wget, git, and ensure python3-pip/python3-venv are available
+# We no longer need Java as we are using yt-dlp
 RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk wget git yt-dlp bash && \
-    # Ensure python3-pip is available (usually included in python:3.10-slim, but good to be sure)
-    apt-get install -y python3-pip python3-venv && \
+    apt-get install -y wget git yt-dlp bash python3-pip python3-venv && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
