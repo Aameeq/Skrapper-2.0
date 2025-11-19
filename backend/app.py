@@ -144,7 +144,7 @@ class SkraperService:
     def format_results_for_web(self, raw_data, url, platform, limit):
         """Format yt-dlp results for web frontend (Adapted from Skraper formatting)"""
         # This is a basic adaptation. yt-dlp's JSON schema differs from Skraper's.
-        # You'll need to map fields from aw_data (yt-dlp output) to your desired web format.
+        # You'll need to map fields from # You'll need to map fields from raw_data (yt-dlp output) to your desired web format.
 
         # Create metadata
         metadata = {
@@ -350,4 +350,5 @@ if __name__ == '__main__':
     # Run the application
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
