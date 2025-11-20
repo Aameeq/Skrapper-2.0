@@ -160,7 +160,7 @@ class SkraperService:
         # yt-dlp fields might include: id, title, description, uploader, upload_date, duration, view_count, like_count, thumbnail, formats, etc.
         formatted_data = []
 
-        # Assuming aw_data is a single item's metadata dict from yt-dlp
+        # Assuming         # You'll need to map fields from raw_data (yt-dlp output) to your desired web format. (Fixed by script)
         if isinstance(raw_data, dict):
             formatted_post = self.format_post_item_ytdlp(raw_data, platform, 0) # Index 0 for single item
             formatted_data.append(formatted_post)
@@ -350,5 +350,6 @@ if __name__ == '__main__':
     # Run the application
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
 
