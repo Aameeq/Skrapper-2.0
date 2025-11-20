@@ -142,9 +142,9 @@ class SkraperService:
             raise
 
     def format_results_for_web(self, raw_data, url, platform, limit):
-        """Format yt-dlp results for web frontend (Adapted from Skraper formatting)"""
-        # This is a basic adaptation. yt-dlp's JSON schema differs from Skraper's.
-        # You'll need to map fields from # You'll need to map fields from raw_data (yt-dlp output) to your desired web format.
+        """Format yt-dlp results for web frontend (Simplified placeholder)"""
+        # This is a basic placeholder. yt-dlp's JSON schema differs from Skraper's.
+        # You'll need to map fields from raw_data (yt-dlp output) to your desired web format.
 
         # Create metadata
         metadata = {
@@ -160,25 +160,25 @@ class SkraperService:
         # yt-dlp fields might include: id, title, description, uploader, upload_date, duration, view_count, like_count, thumbnail, formats, etc.
         formatted_data = []
 
-        # Assuming         # You'll need to map fields from raw_data (yt-dlp output) to your desired web format. (Fixed by script)
+        # Assuming raw_data is a single item's metadata dict from yt-dlp
         if isinstance(raw_data, dict):
             formatted_post = self.format_post_item_ytdlp(raw_data, platform, 0) # Index 0 for single item
             formatted_data.append(formatted_post)
-        # If aw_data was a list (e.g., from a playlist), iterate through it.
+        # If raw_data was a list (e.g., from a playlist), iterate through it.
         # elif isinstance(raw_data, list):
         #    for i, item in enumerate(raw_data[:limit]): # Apply limit here if needed
         #        formatted_post = self.format_post_item_ytdlp(item, platform, i)
         #        formatted_data.append(formatted_post)
 
         # Calculate statistics (example based on common yt-dlp fields)
-        total_likes = sum(post.get('likes', 0) for post in formatted_data)
-        total_comments = sum(post.get('comments', 0) for post in formatted_data)
+        total_likes = sum(post.get('like_count', 0) for post in formatted_data)
+        total_comments = sum(post.get('comment_count', 0) for post in formatted_data)
         # Note: yt-dlp doesn't always get comment counts, unlike Skraper potentially parsing HTML
         total_shares = 0 # Shares are rarely available via public API scraping
 
         statistics = {
             "total_posts": len(formatted_data),
-            "media_items": len([p for p in formatted_data if p.get('media_url')]),
+            "media_items": len([p for p in formatted_data if p.get('thumbnail')]), # Or check 'formats' for media
             "engagement_metrics": {
                 "total_likes": total_likes,
                 "total_comments": total_comments,
@@ -282,7 +282,7 @@ def scrape_endpoint():
 
         # Optional parameters
         content_type = data.get('content_type', 'posts')
-        limit = min(int(data.get('limit', 50)), 100)  # Max 100 posts (adjust as needed)
+        limit = min(int(data.get('limit', 50)), 100)  # Max 100 posts
         output_format = data.get('output_format', 'json')
 
         # Scrape data using yt-dlp
@@ -293,7 +293,7 @@ def scrape_endpoint():
             output_format=output_format
         )
 
-        # Format results using the adapted formatter
+        # Format results
         platform = skraper_service.detect_platform(url)
         formatted_results = skraper_service.format_results_for_web(
             raw_data, url, platform, limit
@@ -350,6 +350,4 @@ if __name__ == '__main__':
     # Run the application
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
-
 
