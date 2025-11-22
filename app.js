@@ -1,4 +1,4 @@
-// Skraper Web Full-Stack App - Supabase Integration
+﻿// Skraper Web Full-Stack App - Supabase Integration
 // Main application logic for authentication and real-time todos
 
 class SkraperWebApp {
@@ -22,7 +22,22 @@ class SkraperWebApp {
             this.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
             
             // Check for existing session
-            await this.checkUserSession();
+            // await this.checkUserSession(); // REMOVED AUTH CHECK - Simulating user session
+            
+            // *** SIMULATE USER SESSION ***
+            this.currentUser = {
+                id: 'simulated_user',
+                email: 'guest@example.com',
+                user_metadata: {}
+            };
+            // Load profile (might be skipped if not needed, or simulated)
+            // await this.loadUserProfile(); // Optionally call if profile loading is needed for UI
+            // Show main UI directly
+            this.showMainUI();
+            // Optionally load todos if the main UI includes them (using simulated user ID)
+            // await this.loadTodos(); // Requires modification to use simulated user ID
+            // this.subscribeToTodos(); // Requires modification to use simulated user ID
+            console.log('✅ Simulated user session active, main UI displayed');
             
             // Setup event listeners
             this.setupEventListeners();
@@ -30,39 +45,39 @@ class SkraperWebApp {
             // Initialize UI
             this.initializeUI();
             
-            console.log('✅ Skraper Web App initialized successfully');
+            console.log('âœ… Skraper Web App initialized successfully');
             
         } catch (error) {
-            console.error('❌ Failed to initialize app:', error);
+            console.error('âŒ Failed to initialize app:', error);
             this.showError('Failed to connect to backend. Please refresh the page.');
         }
     }
 
-    async checkUserSession() {
-        try {
-            const { data: { user }, error } = await this.supabase.auth.getUser();
-            
-            if (error) {
-                console.log('No active session:', error.message);
-                this.showAuthUI();
-                return;
-            }
-            
-            if (user) {
-                this.currentUser = user;
-                await this.loadUserProfile();
-                this.showMainUI();
-                await this.loadTodos();
-                this.subscribeToTodos();
-            } else {
-                this.showAuthUI();
-            }
-            
-        } catch (error) {
-            console.error('Error checking session:', error);
-            this.showAuthUI();
-        }
-    }
+    // async checkUserSession() {
+    //     try {
+    //         const { data: { user }, error } = await this.supabase.auth.getUser();
+    //         
+    //         if (error) {
+    //             console.log('No active session:', error.message);
+    //             this.showAuthUI();
+    //             return;
+    //         }
+    //         
+    //         if (user) {
+    //             this.currentUser = user;
+    //             await this.loadUserProfile();
+    //             this.showMainUI();
+    //             await this.loadTodos();
+    //             this.subscribeToTodos();
+    //         } else {
+    //             this.showAuthUI();
+    //         }
+    //         
+    //     } catch (error) {
+    //         console.error('Error checking session:', error);
+    //         this.showAuthUI();
+    //     }
+    // }
 
     async loadUserProfile() {
         if (!this.currentUser) return;
@@ -101,7 +116,7 @@ class SkraperWebApp {
             
             if (error) throw error;
             
-            console.log('✅ User profile created');
+            console.log('âœ… User profile created');
             await this.loadUserProfile();
             
         } catch (error) {
@@ -221,10 +236,10 @@ class SkraperWebApp {
             
             if (error) throw error;
             
-            console.log('✅ Sign in initiated');
+            console.log('âœ… Sign in initiated');
             
         } catch (error) {
-            console.error('❌ Sign in failed:', error);
+            console.error('âŒ Sign in failed:', error);
             this.showError('Failed to sign in. Please try again.');
         } finally {
             this.showLoading(false);
@@ -249,10 +264,10 @@ class SkraperWebApp {
             if (error) throw error;
             
             alert('Magic link sent! Check your email to complete signup.');
-            console.log('✅ Magic link sent');
+            console.log('âœ… Magic link sent');
             
         } catch (error) {
-            console.error('❌ Sign up failed:', error);
+            console.error('âŒ Sign up failed:', error);
             this.showError('Failed to send magic link. Please try again.');
         } finally {
             this.showLoading(false);
@@ -271,10 +286,10 @@ class SkraperWebApp {
             
             this.showAuthUI();
             
-            console.log('✅ Signed out successfully');
+            console.log('âœ… Signed out successfully');
             
         } catch (error) {
-            console.error('❌ Sign out failed:', error);
+            console.error('âŒ Sign out failed:', error);
             this.showError('Failed to sign out. Please try again.');
         }
     }
@@ -294,10 +309,10 @@ class SkraperWebApp {
             this.todos = data || [];
             this.renderTodos();
             
-            console.log(`✅ Loaded ${this.todos.length} todos`);
+            console.log(`âœ… Loaded ${this.todos.length} todos`);
             
         } catch (error) {
-            console.error('❌ Failed to load todos:', error);
+            console.error('âŒ Failed to load todos:', error);
             this.showError('Failed to load todos.');
         }
     }
@@ -319,10 +334,10 @@ class SkraperWebApp {
             if (error) throw error;
             
             todoInput.value = '';
-            console.log('✅ Todo added successfully');
+            console.log('âœ… Todo added successfully');
             
         } catch (error) {
-            console.error('❌ Failed to add todo:', error);
+            console.error('âŒ Failed to add todo:', error);
             this.showError('Failed to add todo.');
         }
     }
@@ -339,10 +354,10 @@ class SkraperWebApp {
             
             if (error) throw error;
             
-            console.log('✅ Todo updated successfully');
+            console.log('âœ… Todo updated successfully');
             
         } catch (error) {
-            console.error('❌ Failed to update todo:', error);
+            console.error('âŒ Failed to update todo:', error);
             this.showError('Failed to update todo.');
         }
     }
@@ -359,10 +374,10 @@ class SkraperWebApp {
             
             if (error) throw error;
             
-            console.log('✅ Todo deleted successfully');
+            console.log('âœ… Todo deleted successfully');
             
         } catch (error) {
-            console.error('❌ Failed to delete todo:', error);
+            console.error('âŒ Failed to delete todo:', error);
             this.showError('Failed to delete todo.');
         }
     }
@@ -381,13 +396,13 @@ class SkraperWebApp {
                     filter: `user_id=eq.${this.currentUser.id}`
                 },
                 (payload) => {
-                    console.log('🔄 Real-time update received:', payload.eventType);
+                    console.log('ðŸ”„ Real-time update received:', payload.eventType);
                     this.handleRealtimeUpdate(payload);
                 }
             )
             .subscribe();
         
-        console.log('✅ Subscribed to real-time todo updates');
+        console.log('âœ… Subscribed to real-time todo updates');
     }
 
     handleRealtimeUpdate(payload) {
@@ -440,7 +455,7 @@ class SkraperWebApp {
                     class="ml-3 text-red-400 hover:text-red-300 transition-colors"
                     title="Delete todo"
                 >
-                    🗑️
+                    ðŸ—‘ï¸
                 </button>
             </div>
         `).join('');
@@ -629,18 +644,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Handle authentication redirect
-if (window.location.hash) {
-    // This handles OAuth redirects from GitHub
-    window.addEventListener('load', async () => {
-        const supabaseUrl = 'https://pmloahcuayyyizyfpoycs.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtbG9haGN1YXl5aXp5ZnBveWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MzE0ODAsImV4cCI6MjA3ODAwNzQ4MH0.ETj1GRraw5ek4qNwC7QSAhUIhN935f1qledd5cbfp34';
-        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        
-        try {
-            await supabase.auth.getUser();
-            window.location.hash = '';
-        } catch (error) {
-            console.log('No session found');
-        }
-    });
-}
+// if (window.location.hash) {
+//     // This handles OAuth redirects from GitHub
+//     window.addEventListener('load', async () => {
+//         const supabaseUrl = 'https://pmloahcuayyyizyfpoycs.supabase.co';
+//         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtbG9haGN1YXl5aXp5ZnBveWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MzE0ODAsImV4cCI6MjA3ODAwNzQ4MH0.ETj1GRraw5ek4qNwC7QSAhUIhN935f1qledd5cbfp34';
+//         const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+//         
+//         try {
+//             await supabase.auth.getUser();
+//             window.location.hash = '';
+//         } catch (error) {
+//             console.log('No session found');
+//         }
+//     });
+// }
+
+
+
