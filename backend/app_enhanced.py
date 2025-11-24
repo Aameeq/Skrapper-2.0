@@ -23,7 +23,45 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# Configure CORS
+# Allow requests from Netlify frontend and local development
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://skrapper.netlify.app", 
+            "http://localhost:3000", 
+            "http://127.0.0.1:3000",
+            "http://localhost:5000",
+            "https://skraper-api.onrender.com"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
+
+@app.after_request
+def after_request(response):
+    """Ensure CORS headers are added to every response"""
+    # Get the origin from the request
+    origin = request.headers.get('Origin')
+    allowed_origins = [
+        "https://skrapper.netlify.app", 
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000"
+    ]
+    
+    if origin in allowed_origins:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+    elif not origin:
+        # For non-browser requests or when origin is missing, we can be more permissive or strict
+        # depending on requirements. Here we just leave it or set * if needed.
+        pass
+        
+    return response
 
 # Supported platforms mapping
 SUPPORTED_PLATFORMS = {
