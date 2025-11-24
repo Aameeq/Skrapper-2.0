@@ -23,6 +23,7 @@ ENV PATH="/opt/venv/bin:"
 
 # Copy application code
 COPY app.py .
+COPY app_enhanced.py .
 
 # Expose port
 EXPOSE 5000
