@@ -25,7 +25,6 @@ ENV PATH="/opt/venv/bin:"
 COPY app.py .
 COPY app_enhanced.py .
 COPY start.sh .
-RUN chmod +x start.sh
 
 # Expose port
 EXPOSE 5000
@@ -35,4 +34,4 @@ ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
 # Run the application using start.sh to handle PORT env var
-CMD ["./start.sh"]
+CMD ["bash", "start.sh"]
