@@ -89,13 +89,19 @@ class EnhancedSkraperService:
     """Enhanced service class with AI agent data analysis"""
     
     def __init__(self):
-        self.skraper_available = self._check_skraper_availability()
+        # Configure yt-dlp path based on environment
+        if os.name == 'nt':  # Windows
+            self.yt_dlp_path = r'C:\Users\Ac\AppData\Roaming\Python\Python313\Scripts\yt-dlp.exe'
+        else:  # Linux (Docker/Render)
+            self.yt_dlp_path = 'yt-dlp'
+        
+        self.skraper_available = self._check_ytdlp_availability()
     
-    def _check_skraper_availability(self):
-        """Check if Skraper CLI is available"""
+    def _check_ytdlp_availability(self):
+        """Check if yt-dlp is available"""
         try:
-            # Try to run skraper --help
-            result = subprocess.run(['skraper', '--help'], 
+            # Try to run yt-dlp --version
+            result = subprocess.run([self.yt_dlp_path, '--version'], 
                                   capture_output=True, text=True, timeout=5)
             return result.returncode == 0
         except:
@@ -153,6 +159,129 @@ class EnhancedSkraperService:
             return path  # Keep full path for YouTube
         
         return path
+    
+    def scrape_with_ytdlp(self, url, limit=50):
+        """Scrape data using yt-dlp"""
+        logger.info(f"Attempting to scrape with yt-dlp: {url}")
+        
+        # Build command for yt-dlp to dump JSON metadata
+        cmd = [
+            self.yt_dlp_path,
+            '--dump-json',  # Output metadata in JSON format
+            '--no-playlist',  # Only info for the item itself, not a playlist/channel
+            '--extractor-args', 'youtube:player_client=default',  # Sometimes helps with YouTube
+            '--no-warnings',  # Suppress warnings
+            url
+        ]
+        
+        logger.info(f"Running yt-dlp command: {' '.join(cmd)}")
+        
+        try:
+            # Run yt-dlp command
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=60  # 1 minute timeout
+            )
+            
+            if result.returncode != 0:
+                logger.error(f"yt-dlp error: {result.stderr}")
+                raise Exception(f"Scraping failed: {result.stderr}")
+            
+            # yt-dlp --dump-json outputs one JSON object per line
+            output_lines = result.stdout.strip().split('\n')
+            
+            if not output_lines or output_lines == ['']:
+                raise Exception("yt-dlp returned no output")
+            
+            # Parse the first line as JSON (primary item)
+            try:
+                raw_data = json.loads(output_lines[0])
+                logger.info("Successfully parsed yt-dlp output as JSON")
+                return raw_data
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to decode JSON output from yt-dlp: {e}")
+                logger.debug(f"Raw yt-dlp output (first 500 chars): {result.stdout[:500]}")
+                raise Exception("Invalid JSON response format from yt-dlp")
+        
+        except subprocess.TimeoutExpired:
+            raise Exception("Scraping timeout - operation took too long")
+        except Exception as e:
+            logger.error(f"Error running yt-dlp: {str(e)}")
+            raise
+    
+    def transform_ytdlp_to_posts(self, raw_data, url, platform, limit=50):
+        """Transform yt-dlp output to posts format for AI analysis"""
+        logger.info("Transforming yt-dlp data to posts format")
+        
+        posts = []
+        
+        # Handle single item (most common case)
+        if isinstance(raw_data, dict):
+            post = self._format_ytdlp_item(raw_data, url, platform, 0)
+            posts.append(post)
+        
+        # Limit to requested number
+        posts = posts[:limit]
+        
+        logger.info(f"Transformed {len(posts)} posts from yt-dlp data")
+        return posts
+    
+    def _format_ytdlp_item(self, item, url, platform, index):
+        """Format a single yt-dlp item to post format"""
+        # Extract description and parse for hashtags/mentions
+        description = item.get('description', '') or item.get('title', '')
+        
+        # Convert upload date
+        upload_date = item.get('upload_date', '')
+        if upload_date and len(upload_date) == 8:
+            try:
+                year = int(upload_date[0:4])
+                month = int(upload_date[4:6])
+                day = int(upload_date[6:8])
+                timestamp = datetime(year, month, day).isoformat() + "Z"
+            except:
+                timestamp = datetime.now().isoformat() + "Z"
+        else:
+            timestamp = datetime.now().isoformat() + "Z"
+        
+        # Extract hashtags and mentions from description
+        hashtags = re.findall(r'#\w+', description)
+        mentions = re.findall(r'@\w+', description)
+        
+        # Count emojis (basic detection)
+        emoji_pattern = re.compile("["
+            u"\U0001F600-\U0001F64F"  # emoticons
+            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+            u"\U0001F680-\U0001F6FF"  # transport & map symbols
+            u"\U0001F1E0-\U0001F1FF"  # flags
+            "]+", flags=re.UNICODE)
+        emoji_count = len(emoji_pattern.findall(description))
+        
+        post = {
+            "id": item.get('id', f"post_{index+1}"),
+            "username": item.get('uploader', 'unknown'),
+            "content": description,
+            "caption": description,
+            "timestamp": timestamp,
+            "likes": item.get('like_count', 0) or 0,
+            "comments": item.get('comment_count', 0) or 0,
+            "shares": 0,  # Not available from yt-dlp
+            "media_url": item.get('thumbnail', ''),
+            "hashtags": hashtags,
+            "mentions": mentions,
+            "media_type": "video" if item.get('duration') else "image",
+            "post_length": len(description),
+            "emoji_count": emoji_count,
+            "call_to_action": self.detect_call_to_action(description),
+            "sentiment": self.analyze_sentiment(description),
+            "view_count": item.get('view_count', 0) or 0,
+            "duration": item.get('duration', 0)
+        }
+        
+        return post
+
     
     def generate_enhanced_mock_data(self, platform, url, limit):
         """Generate enhanced mock data with AI agent analysis"""
@@ -408,8 +537,23 @@ class EnhancedSkraperService:
         if not platform:
             raise Exception(f"Unsupported platform for URL: {url}")
         
-        # Generate enhanced mock data (replace with real Skraper call when available)
-        posts = self.generate_enhanced_mock_data(platform, url, limit)
+        # Try real scraping with yt-dlp, fallback to mock data if it fails
+        posts = []
+        scraping_method = "mock"
+        
+        if self.skraper_available:
+            try:
+                logger.info(f"Attempting real scraping with yt-dlp for {url}")
+                raw_data = self.scrape_with_ytdlp(url, limit)
+                posts = self.transform_ytdlp_to_posts(raw_data, url, platform, limit)
+                scraping_method = "yt-dlp"
+                logger.info(f"Successfully scraped {len(posts)} posts with yt-dlp")
+            except Exception as e:
+                logger.warning(f"Real scraping failed: {e}, falling back to mock data")
+                posts = self.generate_enhanced_mock_data(platform, url, limit)
+        else:
+            logger.info("yt-dlp not available, using mock data")
+            posts = self.generate_enhanced_mock_data(platform, url, limit)
         
         # Perform enhanced analysis
         brand_voice = self.analyze_brand_voice(posts)
@@ -424,7 +568,9 @@ class EnhancedSkraperService:
                 "scraped_at": datetime.utcnow().isoformat() + "Z",
                 "content_type": content_type,
                 "limit": limit,
-                "total_posts": len(posts)
+                "total_posts": len(posts),
+                "scraping_method": scraping_method,
+                "yt_dlp_available": self.skraper_available
             },
             "posts": posts,
             "brand_analysis": {
@@ -635,13 +781,13 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
-    # Check if skraper is available
+    # Check if yt-dlp is available
     if not skraper_service.skraper_available:
-        logger.warning("Skraper CLI not available. Using enhanced mock data.")
-        logger.info("To enable real data scraping, install Skraper CLI:")
-        logger.info("https://github.com/sokomishalov/skraper")
+        logger.warning("yt-dlp not available. Using enhanced mock data.")
+        logger.info("To enable real data scraping, install yt-dlp:")
+        logger.info("pip install yt-dlp")
     else:
-        logger.info("Skraper CLI available. Enhanced features enabled.")
+        logger.info("yt-dlp available. Real scraping enabled with AI analysis!")
     
     # Run the application
     port = int(os.environ.get('PORT', 5000))
